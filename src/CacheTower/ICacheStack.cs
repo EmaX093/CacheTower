@@ -27,6 +27,12 @@ namespace CacheTower
 		/// <returns></returns>
 		ValueTask EvictAsync(string cacheKey);
 		/// <summary>
+		/// Removes an wildcard entry with the corresponding <paramref name="cacheKeyWildcard"/> from all cache layers.
+		/// </summary>
+		/// <param name="cacheKeyWildcard">The cache entry's key wildcard.</param>
+		/// <returns></returns>
+		ValueTask EvictWildcardAsync(string cacheKeyWildcard);
+		/// <summary>
 		/// Sets the entry for <paramref name="cacheKey"/> to <paramref name="value"/> with a corresponding <paramref name="timeToLive"/> across all cache layers.
 		/// </summary>
 		/// <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
@@ -65,6 +71,12 @@ namespace CacheTower
 		/// <param name="settings">Cache control settings.</param>
 		/// <returns>The item from the cache that corresponds to the given <paramref name="cacheKey"/>.</returns>
 		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> valueFactory, CacheSettings settings);
+
+		/// <summary>
+		/// List all keys added in the cache
+		/// </summary>
+		/// <returns>List all keys added in the cache</returns>
+		ValueTask<IEnumerable<string>> GetKeys();
 	}
 
 	/// <remarks>

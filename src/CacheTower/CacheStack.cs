@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
@@ -141,6 +142,41 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		}
 
 		await Extensions.OnCacheEvictionAsync(cacheKey);
+	}
+
+	/// <inheritdoc/>
+	public async ValueTask EvictWildcardAsync(string cacheKeyWildcard)
+	{
+		ThrowIfDisposed();
+
+		if (cacheKeyWildcard == null)
+		{
+			throw new ArgumentNullException(nameof(cacheKeyWildcard));
+		}
+
+		var cacheKeysEvicted = new List<string>();
+
+		for (int i = 0, l = CacheLayers.Length; i < l; i++)
+		{
+			var layer = CacheLayers[i];
+
+			var allKeys = await layer.GetKeys();
+
+			foreach (var cacheKey in allKeys)
+			{
+				if (cacheKey.ContainsWildcard(cacheKeyWildcard))
+				{
+					await layer.EvictAsync(cacheKey);
+
+					cacheKeysEvicted.Add(cacheKey);
+				}
+			}
+		}
+
+		foreach (var cacheKey in cacheKeysEvicted)
+		{
+			await Extensions.OnCacheEvictionAsync(cacheKey);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -389,6 +425,24 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		}
 
 		return default;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	public async ValueTask<IEnumerable<string>> GetKeys()
+	{
+		var keys = new List<string>();
+
+		for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
+		{
+			var layer = CacheLayers[layerIndex];
+
+			keys.AddRange(await layer.GetKeys());
+		}
+
+		return keys.Distinct();
 	}
 
 	/// <summary>

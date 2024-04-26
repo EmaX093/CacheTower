@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CacheTower
 {
@@ -46,6 +48,11 @@ namespace CacheTower
 		/// <param name="cacheKey"></param>
 		/// <returns></returns>
 		ValueTask<bool> IsAvailableAsync(string cacheKey);
+		/// <summary>
+		/// List all keys in the cache layer
+		/// </summary>
+		/// <returns>Cache keys in layer</returns>
+		ValueTask<IEnumerable<string>> GetKeys();
 	}
 
 	/// <inheritdoc/>

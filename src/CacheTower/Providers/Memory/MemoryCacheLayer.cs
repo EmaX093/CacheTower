@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CacheTower.Internal;
 
@@ -55,6 +57,15 @@ namespace CacheTower.Providers.Memory
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
+				if(typeof(T) is object)
+				{
+					var value = cacheEntry.GetType().GetProperty("Value").GetValue(cacheEntry);
+
+					var x = new CacheEntry<T>((T)value, cacheEntry.Expiry);
+
+					return new ValueTask<CacheEntry<T>?>(x);
+				}
+
 				return new ValueTask<CacheEntry<T>?>(cacheEntry as CacheEntry<T>);
 			}
 
@@ -72,6 +83,12 @@ namespace CacheTower.Providers.Memory
 		{
 			Cache[cacheKey] = cacheEntry;
 			return new ValueTask();
+		}
+
+		/// <inheritdoc/>
+		public ValueTask<IEnumerable<string>> GetKeys()
+		{
+			return new ValueTask<IEnumerable<string>>(Cache.Keys);
 		}
 	}
 }

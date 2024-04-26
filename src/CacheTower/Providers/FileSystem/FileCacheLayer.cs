@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CacheTower.Internal;
@@ -288,6 +290,19 @@ namespace CacheTower.Providers.FileSystem
 				var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 				await SerializeFileAsync(path, cacheEntry.Value);
 			}
+		}
+
+		/// <inheritdoc/>
+		public ValueTask<IEnumerable<string>> GetKeys()
+		{
+			if (CacheManifest != null)
+			{
+				var keys = CacheManifest.Keys.Where(c => c != null).Select(n => n!.ToString());
+
+				return new ValueTask<IEnumerable<string>>(keys);
+			}
+
+			return new ValueTask<IEnumerable<string>>([]);
 		}
 
 		/// <summary>
