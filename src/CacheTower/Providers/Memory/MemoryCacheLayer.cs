@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using CacheTower.Internal;
 
 namespace CacheTower.Providers.Memory
@@ -57,13 +58,15 @@ namespace CacheTower.Providers.Memory
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
-				if(typeof(T) is object)
+				// if is requested by Object but CacheEntry isn't object.
+				// Use case for this is to enable Get item without knowing T type.
+				if (typeof(T) is object && cacheEntry is not CacheEntry<object>)
 				{
+					// get's the value through reflection
 					var value = cacheEntry.GetType().GetProperty("Value").GetValue(cacheEntry);
-
-					var x = new CacheEntry<T>((T)value, cacheEntry.Expiry);
-
-					return new ValueTask<CacheEntry<T>?>(x);
+					
+					// creates new instance and returns
+					return new ValueTask<CacheEntry<T>?>(new CacheEntry<T>((T)value, cacheEntry.Expiry));
 				}
 
 				return new ValueTask<CacheEntry<T>?>(cacheEntry as CacheEntry<T>);
