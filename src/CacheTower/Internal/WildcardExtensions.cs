@@ -8,6 +8,6 @@ namespace CacheTower.Internal
 	internal static class WildcardExtensions
 	{
 		// Supports both "*" and "?"
-		public static bool ContainsWildcard(this string value, string wildcard) => Regex.IsMatch(value, "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$");
+		public static bool ContainsWildcard(this string value, string wildcard) => Regex.IsMatch(value, "^" + Regex.Escape(wildcard).Replace("\\?", ".").Replace("\\*", ".*") + "$");
 	}
 }
